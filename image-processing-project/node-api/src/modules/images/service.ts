@@ -1,6 +1,6 @@
 import { MultipartFile } from '@fastify/multipart'
 import { saveFileLocally } from '../../utils/fileUtils'
-import { sendToPythonWorker } from '../../utils/apiClient'
+import { sendToChromaWorker, sendToPythonWorker } from '../../utils/apiClient'
 import path from 'path'
 import { randomUUID } from 'crypto'
 
@@ -18,17 +18,12 @@ async function process(file: MultipartFile) {
 }
 
 async function saveChroma(file: MultipartFile) {
-  const filename = `${randomUUID()}_${file.filename}`;
-  const filePath = await saveFileLocally(file, filename, CHROMA_UPLOAD_DIR);
+  const filename = `${randomUUID()}_${file.filename}`
+  const filePath = await saveFileLocally(file, filename, CHROMA_UPLOAD_DIR)
 
-  const url = `/uploads/chroma/${filename}`;
+  const result = await sendToChromaWorker(filePath)
 
-  return {
-    message: "Chroma uploaded successfully",
-    filename,
-    filePath,
-    url,
-  };
+  return result
 }
 
 export const imageService = {

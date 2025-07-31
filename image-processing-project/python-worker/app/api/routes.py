@@ -23,3 +23,22 @@ async def process_image_endpoint(file: UploadFile = File(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/chroma")
+async def upload_chroma_image(file: UploadFile = File(...)):
+    try:
+        input_path = save_upload_file(file, INPUT_DIR)
+
+        filename = os.path.basename(input_path)
+
+        url = f"/static/chroma/{filename}"
+
+        return {
+            "message": "Chroma image uploaded successfully",
+            "filename": filename,
+            "url": url
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
