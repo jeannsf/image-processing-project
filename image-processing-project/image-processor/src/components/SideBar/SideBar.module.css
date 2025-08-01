@@ -1,0 +1,51 @@
+.panel {
+  background-color: var(--color-panel-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: var(--spacing-md);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.25rem;
+}
+
+.panelScrollable {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.card {
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cardSelected {
+  border: 2px solid #2ecc71;
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+  transform: scale(1.02);
+  transition: all 0.2s ease-in-out;
+}
+
+.cardImage {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.cardLabel {
+  display: block;
+  text-align: center;
+  margin-top: var(--spacing-sm);
+  color: var(--color-text);
+}

@@ -1,0 +1,74 @@
+:root {
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+
+  --color-bg: #f5f7fa;
+  --color-panel-bg: #ffffff;
+  --color-primary: #4a90e2;
+  --color-accent: #f39c12;
+  --color-text: #333333;
+  --color-border: #e1e4e8;
+
+  --transition-fast: 0.2s ease-in-out;
+  --transition-default: 0.3s ease;
+}
+
+.appContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg);
+
+  max-width: 1200px;
+  width: 100%;
+  margin: auto;
+  
+  box-sizing: border-box;
+}
+
+.processButton {
+  grid-column: 1 / -1;
+  justify-self: center;
+  position: sticky;
+  bottom: var(--spacing-md);
+}
+
+.heading {
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.25rem;
+}
+
+.panel {
+  background-color: var(--color-panel-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: var(--spacing-md);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.panelScrollable {
+  overflow-y: auto;
+}
+
+.card {
+  background-color: var(--color-panel-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  transition: box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cardSelected {
+  border-color: var(--color-primary);
+}
