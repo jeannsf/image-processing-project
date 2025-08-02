@@ -74,7 +74,7 @@ const App: React.FC = () => {
 
       <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
 
-      <ResultPanel results={results} loading={isProcessing} />
+      <ResultPanel results={results} loading={isProcessing} onChange={setResults} />
 
       <ProcessButton onClick={handleProcess} className={styles.processButton} />
     </div>

@@ -3,6 +3,9 @@ from fastapi import HTTPException
 from app.core.config import BACKGROUND_DIR, OUTPUT_DIR, INPUT_DIR
 
 def delete_image_file(filename: str, location: str):
+    if location == "output":
+        location = "processed"
+
     dir_map = {
         "chroma": INPUT_DIR,
         "backgrounds": BACKGROUND_DIR,
@@ -10,7 +13,10 @@ def delete_image_file(filename: str, location: str):
     }
 
     if location not in dir_map:
-        raise HTTPException(status_code=400, detail="Invalid location. Must be one of: chroma, backgrounds, output.")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid location. Must be one of: chroma, backgrounds, processed."
+        )
 
     file_path = os.path.join(dir_map[location], filename)
 
@@ -25,3 +31,4 @@ def delete_image_file(filename: str, location: str):
         os.remove(abs_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
+

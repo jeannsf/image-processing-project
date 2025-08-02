@@ -17,3 +17,8 @@ export interface ResultImage {
   url: string
 }
 
+export interface ResultImage {
+  id: string;
+  url: string;
+  name: string; 
+}

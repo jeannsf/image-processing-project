@@ -82,5 +82,6 @@ def download_all_processed_images():
 
 @router.delete("/image")
 def delete_image(data: DeleteImageRequest):
+    print(f"Deleting image: {data.filename} from {data.location}")
     delete_image_file(data.filename, data.location)
     return {"message": f"File '{data.filename}' deleted from '{data.location}'."}

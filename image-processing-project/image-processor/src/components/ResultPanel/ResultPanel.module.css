@@ -85,3 +85,13 @@
 .downloadIcon:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
+
+.leftIcon {
+  left: 8px;
+  right: auto;
+}
+
+.rightIcon {
+  right: 8px;
+  left: auto;
+}
