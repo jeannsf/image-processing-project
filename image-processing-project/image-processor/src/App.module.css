@@ -62,12 +62,16 @@
   border-radius: 4px;
   padding: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
-  transition: box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: scale(1.03);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
+
 
 .cardSelected {
   border-color: var(--color-primary);

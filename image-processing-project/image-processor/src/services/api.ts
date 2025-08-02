@@ -1,5 +1,5 @@
 const API_URL = process.env.REACT_APP_API_URL;
-const PY_API_URL = process.env.REACT_APP_PYTHON_API_URL; // ex: http://localhost:8000
+const PY_API_URL = process.env.REACT_APP_PYTHON_API_URL;
 
 export interface Background {
   id: string;
@@ -52,6 +52,13 @@ export async function uploadChromaImage(
   return response.json();
 }
 
+export async function triggerChromaProcessing(): Promise<void> {
+  const response = await fetch(`${API_URL}/images/chromas`);
+  if (!response.ok) {
+    throw new Error("Failed to trigger chroma processing");
+  }
+}
+
 export async function fetchChromas(): Promise<ChromaImage[]> {
   const response = await fetch(`${API_URL}/images/chromas/list`);
   if (!response.ok) {
@@ -65,4 +72,13 @@ export async function fetchChromas(): Promise<ChromaImage[]> {
     name: chroma.name,
     previewUrl: `${API_URL}${chroma.url}`,
   }));
+}
+
+export async function uploadAndRefreshChromas(
+  file: File
+): Promise<ChromaImage[]> {
+  await uploadChromaImage(file);        
+  await triggerChromaProcessing();      
+  const updated = await fetchChromas(); 
+  return updated;
 }

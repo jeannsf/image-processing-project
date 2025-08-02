@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse
 from app.utils.file_utils import save_upload_file
 from app.services.image_processor import process_image
 from app.services.get_backgrounds import get_all_background_images
@@ -33,15 +34,16 @@ async def upload_chroma_image(file: UploadFile = File(...)):
         input_path = save_upload_file(file, INPUT_DIR)
 
         filename = os.path.basename(input_path)
-
         url = f"/static/chroma/{filename}"
 
-        return {
-            "message": "Chroma image uploaded successfully",
-            "filename": filename,
-            "url": url
-        }
-
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Chroma image uploaded successfully",
+                "filename": filename,
+                "url": url,
+            }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

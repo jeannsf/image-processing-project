@@ -50,11 +50,6 @@ const App: React.FC = () => {
       <ResultPanel results={results} loading={isProcessing} />
 
       <ProcessButton
-        disabled={
-          selectedBackgrounds.length === 0 ||
-          chromaImages.length === 0 ||
-          isProcessing
-        }
         onClick={handleProcess}
         className={styles.processButton}
       />
