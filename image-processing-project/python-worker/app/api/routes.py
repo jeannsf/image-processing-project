@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from app.utils.file_utils import save_upload_file
-from app.services.image_processor import process_image
+from app.services.image_processor import get_all_processed_images, process_image
 from app.services.get_backgrounds import get_all_background_images
 from app.services.chroma_service import get_all_chroma_images
 from app.core.config import INPUT_DIR, OUTPUT_DIR
@@ -10,22 +11,23 @@ import os
 
 router = APIRouter()
 
+class FilenameRequest(BaseModel):
+    filename: str
+
 @router.post("/process")
-async def process_image_endpoint(file: UploadFile = File(...)):
-    try:
-        input_path = save_upload_file(file, INPUT_DIR)
-        
-        output_filename = process_image(input_path)
-        output_path = os.path.join(OUTPUT_DIR, output_filename)
+def process_by_filename(data: FilenameRequest):
+    input_path = os.path.join(INPUT_DIR, data.filename)
 
-        return {
-            "message": "Image processed successfully",
-            "filename": output_filename,
-            "url": f"/static/{output_filename}" 
-        }
+    if not os.path.exists(input_path):
+        raise HTTPException(status_code=404, detail="File not found")
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    output_filenames = process_image(input_path)
+
+    return {
+        "message": "Image processed successfully",
+        "filenames": output_filenames,
+        "urls": [f"/static/{f}" for f in output_filenames]
+    }
     
 
 @router.post("/chroma")
@@ -60,5 +62,13 @@ def download_all_backgrounds():
 def download_all_chroma_images():
     try:
         return get_all_chroma_images()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get("/results")
+def download_all_processed_images():
+    try:
+        return get_all_processed_images()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
