@@ -62,3 +62,26 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.imageWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.downloadIcon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+  transition: background-color 0.2s ease;
+}
+
+.downloadIcon:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}

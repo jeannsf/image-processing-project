@@ -1,5 +1,7 @@
 import React from 'react'
 import { ResultImage } from '../../types'
+import { downloadImage } from '../../utils/download'
+import { Download } from 'lucide-react'
 
 import styles from './ResultPanel.module.css'
 
@@ -23,11 +25,20 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading }) => {
       <div className={styles.grid}>
         {results.map((res) => (
           <div key={res.id} className={styles.item}>
-            <img
-              src={res.url}
-              alt="Resultado"
-              className={styles.image}
-            />
+            <div className={styles.imageWrapper}>
+              <img
+                src={res.url}
+                alt="Resultado"
+                className={styles.image}
+              />
+              <Download
+                className={styles.downloadIcon}
+                size={20}
+                onClick={() =>
+                  downloadImage(res.url, `resultado-${res.id}.png`)
+                }
+              />
+            </div>
           </div>
         ))}
       </div>
