@@ -1,5 +1,6 @@
 import React from "react";
 import { useDropzone } from "react-dropzone";
+import { UploadCloud } from "lucide-react";
 import styles from "./ChromaKeyPanel.module.css";
 import { ChromaImage } from "../../types";
 import { uploadAndRefreshChromas, deleteImage } from "../../services/api";
@@ -51,9 +52,12 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({ images, onChange }) => 
         }`}
       >
         <input {...getInputProps()} />
-        {isDragActive
-          ? "Solte as imagens aqui"
-          : "Arraste imagens ou clique para selecionar"}
+        <UploadCloud size={40} />
+        <div className={styles.dropzoneText}>
+          {isDragActive
+            ? "Solte as imagens aqui"
+            : "Arraste imagens ou clique para selecionar"}
+        </div>
       </div>
 
       {images.length > 0 && (

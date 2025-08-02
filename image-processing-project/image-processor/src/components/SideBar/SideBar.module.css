@@ -11,8 +11,20 @@
 .heading {
   color: var(--color-text);
   margin-bottom: var(--spacing-md);
-  font-size: 1.25rem;
+  font-size: 1.5rem;      
+  font-weight: 700;       
+  letter-spacing: 0.05em; 
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--color-primary);
+  padding-bottom: 0.25rem; 
+  transition: color 0.3s ease;
 }
+
+.heading:hover {
+  color: var(--color-primary); 
+  cursor: pointer;            
+}
+
 
 .panelScrollable {
   overflow-y: auto;
