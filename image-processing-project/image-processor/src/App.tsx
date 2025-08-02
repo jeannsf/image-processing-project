@@ -5,7 +5,7 @@ import ResultPanel from "./components/ResultPanel/ResultPanel";
 import ProcessButton from "./components/PorcessButton/ProcessButton";
 import { Background, ChromaImage, ResultImage } from "./types";
 import styles from "./App.module.css";
-import { fetchBackgrounds } from "./services/api";
+import { fetchBackgrounds, fetchChromas } from "./services/api";
 
 const App: React.FC = () => {
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<Background[]>([]);
@@ -19,6 +19,12 @@ const App: React.FC = () => {
       .then(setBackgrounds)
       .catch((error) => {
         console.error("Failed to fetch backgrounds:", error);
+      });
+
+    fetchChromas()
+      .then(setChromaImages)
+      .catch((error) => {
+        console.error("Failed to fetch chromas:", error);
       });
   }, []);
 

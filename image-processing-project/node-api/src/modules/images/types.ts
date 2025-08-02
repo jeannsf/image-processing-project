@@ -41,3 +41,19 @@ export interface ErrorResponse {
   message: string
   error?: unknown
 }
+
+export interface ChromaDownloadResponse {
+  message: string;
+  targetDir: string;
+}
+
+export interface ChromaImage {
+  id: string;
+  name: string;
+  url: string;
+}
+
+export interface ChromaListResponse {
+  message: string;
+  chromas: ChromaImage[];
+}
