@@ -1,47 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./components/SideBar/Sidebar";
 import ChromaKeyPanel from "./components/ChromaList/ChromaKeyPanel";
 import ResultPanel from "./components/ResultPanel/ResultPanel";
 import ProcessButton from "./components/PorcessButton/ProcessButton";
 import { Background, ChromaImage, ResultImage } from "./types";
 import styles from "./App.module.css";
-
-const dummyBackgrounds: Background[] = [
-  { id: "b1", name: "Praia", url: "https://picsum.photos/id/1015/600/400" },
-  { id: "b2", name: "Montanha", url: "https://picsum.photos/id/1003/600/400" },
-  {
-    id: "b3",
-    name: "Cidade à Noite",
-    url: "https://picsum.photos/id/1011/600/400",
-  },
-  { id: "b4", name: "Floresta", url: "https://picsum.photos/id/1024/600/400" },
-];
+import { fetchBackgrounds } from "./services/api";
 
 const App: React.FC = () => {
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<Background[]>([]);
+  const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [chromaImages, setChromaImages] = useState<ChromaImage[]>([]);
   const [results, setResults] = useState<ResultImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    fetchBackgrounds()
+      .then(setBackgrounds)
+      .catch((error) => {
+        console.error("Failed to fetch backgrounds:", error);
+      });
+  }, []);
 
   const handleProcess = () => {
     if (selectedBackgrounds.length === 0 || chromaImages.length === 0) return;
 
     setIsProcessing(true);
 
-    setTimeout(() => {
-      const simulated: ResultImage[] = chromaImages.map((img, idx) => ({
-        id: `${img.id}-r`,
-        url: `https://picsum.photos/seed/result-${idx}/300/200`,
-      }));
-      setResults(simulated);
-      setIsProcessing(false);
-    }, 1500);
+
+    setIsProcessing(false);
   };
 
   return (
     <div className={styles.appContainer}>
       <Sidebar
-        items={dummyBackgrounds}
+        items={backgrounds}
         selected={selectedBackgrounds}
         onSelect={setSelectedBackgrounds}
       />
