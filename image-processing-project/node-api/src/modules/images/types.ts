@@ -15,3 +15,13 @@ export interface SaveChromaResponse {
   url: string;
   filePath: string;
 }
+
+export interface BackgroundDownloadResponse {
+  message: string
+  targetDir: string
+}
+
+export interface ErrorResponse {
+  message: string
+  error?: unknown
+}

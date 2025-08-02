@@ -4,6 +4,7 @@ import fs from 'fs'
 
 const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://localhost:8000/process'
 const PYTHON_CHROMA_URL = process.env.PYTHON_CHROMA_URL || 'http://localhost:8000/chroma'
+const PYTHON_BACKGROUNDS_URL = process.env.PYTHON_BACKGROUNDS_URL || 'http://localhost:8000/backgrounds'
 
 export async function sendToPythonWorker(filePath: string) {
   const form = new FormData()
@@ -25,4 +26,12 @@ export async function sendToChromaWorker(filePath: string) {
   })
 
   return response.data
+}
+
+export async function fetchBackgroundZip() {
+  const response = await axios.get(PYTHON_BACKGROUNDS_URL, {
+    responseType: 'stream',
+  })
+
+  return response
 }

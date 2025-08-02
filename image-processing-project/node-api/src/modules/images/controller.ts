@@ -4,6 +4,7 @@ import type {
   ProcessImageResponse,
   ErrorResponse,
   SaveChromaResponse,
+  BackgroundDownloadResponse,
 } from "./types";
 
 async function processImage(request: FastifyRequest, reply: FastifyReply) {
@@ -43,7 +44,22 @@ async function uploadChroma(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
+async function fetchAll(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const result: BackgroundDownloadResponse = await imageService.fetchAndSaveBackgrounds()
+    return reply.send(result)
+  } catch (error) {
+    const errorResponse: ErrorResponse = {
+      message: 'Failed to download backgrounds',
+      error,
+    }
+    return reply.status(500).send(errorResponse)
+  }
+}
+
+
 export const imageController = {
   processImage,
   uploadChroma,
+  fetchAll,
 };

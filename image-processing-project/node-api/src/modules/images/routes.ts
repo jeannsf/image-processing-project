@@ -18,4 +18,7 @@ export default async function (app: FastifyInstance) {
     },
     imageController.uploadChroma
   );
+
+  app.get('/backgrounds', imageController.fetchAll)
+
 }

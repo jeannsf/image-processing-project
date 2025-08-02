@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.utils.file_utils import save_upload_file
 from app.services.image_processor import process_image
+from app.services.get_backgrounds import get_all_background_images
 from app.core.config import INPUT_DIR, OUTPUT_DIR
 
 import os
@@ -40,5 +41,14 @@ async def upload_chroma_image(file: UploadFile = File(...)):
             "url": url
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.get("/backgrounds")
+def download_all_backgrounds():
+    try:
+        return get_all_background_images()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
