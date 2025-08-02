@@ -1,37 +1,12 @@
-import { MultipartFile } from "@fastify/multipart";
-import { saveFileLocally } from "../../utils/fileUtils";
-import {
-  fetchBackgroundZip,
-  sendToChromaWorker,
-  sendToPythonWorker,
-} from "../../utils/apiClient";
+import { fetchBackgroundZip } from "../../utils/apiClient";
 import path from "path";
-import { randomUUID } from "crypto";
-import { BackgroundDownloadResponse } from "./types";
+import { Background, BackgroundDownloadResponse } from "./types";
 import unzipper from "unzipper";
 import fs from "fs";
+import fsp from "fs/promises";
 
-const TMP_UPLOAD_DIR = path.join(__dirname, "../../../tmp");
-const CHROMA_UPLOAD_DIR = path.join(__dirname, "../../data/chroma");
 const BACKGROUND_DIR = path.join(__dirname, "../../data/backgrounds");
-
-async function process(file: MultipartFile) {
-  const filename = `${randomUUID()}_${file.filename}`;
-  const filePath = await saveFileLocally(file, filename, TMP_UPLOAD_DIR);
-
-  const result = await sendToPythonWorker(filePath);
-
-  return result;
-}
-
-async function saveChroma(file: MultipartFile) {
-  const filename = `${randomUUID()}_${file.filename}`;
-  const filePath = await saveFileLocally(file, filename, CHROMA_UPLOAD_DIR);
-
-  const result = await sendToChromaWorker(filePath);
-
-  return result;
-}
+const STATIC_URL_PREFIX = "/static/backgrounds";
 
 async function fetchAndSaveBackgrounds(): Promise<BackgroundDownloadResponse> {
   if (!fs.existsSync(BACKGROUND_DIR)) {
@@ -59,8 +34,20 @@ async function fetchAndSaveBackgrounds(): Promise<BackgroundDownloadResponse> {
   };
 }
 
+async function listBackgrounds(): Promise<Background[]> {
+  const files = await fsp.readdir(BACKGROUND_DIR);
+  const imageFiles = files.filter((file) =>
+    /\.(jpg|jpeg|png|gif|bmp)$/i.test(file)
+  );
+
+  return imageFiles.map((file, idx) => ({
+    id: `bg-${idx}`,
+    name: file,
+    url: `${STATIC_URL_PREFIX}/${file}`,
+  }));
+}
+
 export const imageService = {
-  process,
-  saveChroma,
   fetchAndSaveBackgrounds,
+  listBackgrounds,
 };

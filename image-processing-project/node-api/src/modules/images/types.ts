@@ -25,3 +25,19 @@ export interface ErrorResponse {
   message: string
   error?: unknown
 }
+
+export interface Background {
+  id: string
+  name: string
+  url: string
+}
+
+export interface BackgroundListResponse {
+  message: string
+  backgrounds: Background[]
+}
+
+export interface ErrorResponse {
+  message: string
+  error?: unknown
+}
