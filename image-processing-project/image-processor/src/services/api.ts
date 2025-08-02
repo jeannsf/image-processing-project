@@ -1,3 +1,5 @@
+import { ResultImage } from "../types";
+
 const API_URL = process.env.REACT_APP_API_URL;
 const PY_API_URL = process.env.REACT_APP_PYTHON_API_URL;
 
@@ -18,6 +20,25 @@ export interface ChromaImage {
   file?: File;
   previewUrl: string;
   name?: string;
+}
+
+export interface ProcessImageResponse {
+  message: string;
+  filename: string;
+  url: string;
+}
+
+
+export interface ProcessImageResponse {
+  message: string;
+  filename: string;
+  url: string;
+}
+
+export interface ProcessedImage {
+  id: string;
+  name: string;
+  url: string;
 }
 
 export async function fetchBackgrounds(): Promise<Background[]> {
@@ -81,4 +102,79 @@ export async function uploadAndRefreshChromas(
   await triggerChromaProcessing();      
   const updated = await fetchChromas(); 
   return updated;
+}
+
+export async function processImageByFilename(
+  filename: string
+): Promise<ProcessImageResponse> {
+  const response = await fetch(`${PY_API_URL}/process`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ filename }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to process image by filename");
+  }
+
+  return response.json();
+}
+
+
+
+export async function processAndRefreshProcessedImages(
+  filename: string
+): Promise<ProcessedImage[]> {
+  const processResponse = await fetch(`${PY_API_URL}/process`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename }),
+  });
+
+  if (!processResponse.ok) {
+    throw new Error("Failed to process image by filename");
+  }
+
+  await processResponse.json();
+
+  const processedZipResponse = await fetch(`${API_URL}/images/processed`, {
+    method: "GET",
+  });
+
+  if (!processedZipResponse.ok) {
+    throw new Error("Failed to download processed images zip");
+  }
+
+  const listResponse = await fetch(`${API_URL}/images/processed/list`, {
+    method: "GET",
+  });
+
+  if (!listResponse.ok) {
+    throw new Error("Failed to fetch processed images list");
+  }
+
+  const listData = await listResponse.json();
+
+  return listData.processed.map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    url: `${API_URL}${item.url}`,
+  }));
+}
+
+export async function fetchProcessedResults(): Promise<ResultImage[]> {
+  const response = await fetch(`${API_URL}/images/processed/list`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch processed images");
+  }
+
+  const data = await response.json();
+
+  return data.processed.map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    url: `${API_URL}${item.url}`,
+  }));
 }

@@ -69,9 +69,39 @@ async function listChroma(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
+async function fetchAllProcessed(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const result = await imageService.fetchAndSaveProcessed();
+    return reply.send(result);
+  } catch (error) {
+    return reply.status(500).send({
+      message: "Failed to download processed images",
+      error,
+    });
+  }
+}
+
+async function listProcessed(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const processedImages = await imageService.listProcessed();
+    return reply.send({
+      message: "Processed images fetched successfully",
+      processed: processedImages,
+    });
+  } catch (error) {
+    return reply.status(500).send({
+      message: "Failed to fetch processed images",
+      error,
+    });
+  }
+}
+
+
 export const imageController = {
   fetchAll,
   list,
   fetchAllChroma,
   listChroma,
+  fetchAllProcessed,
+  listProcessed,
 };

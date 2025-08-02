@@ -1,10 +1,12 @@
-import { fetchBackgroundZip, fetchChromaZip } from "../../utils/apiClient";
+import { fetchBackgroundZip, fetchChromaZip, fetchProcessedZip } from "../../utils/apiClient";
 import path from "path";
 import {
   Background,
   BackgroundDownloadResponse,
   ChromaDownloadResponse,
   ChromaImage,
+  ProcessedDownloadResponse,
+  ProcessedImage,
 } from "./types";
 import unzipper from "unzipper";
 import fs from "fs";
@@ -15,6 +17,9 @@ const STATIC_URL_PREFIX = "/static/backgrounds";
 
 const CHROMA_DIR = path.join(__dirname, "../../data/chroma");
 const STATIC_URL_PREFIX_CHROMA = "/static/chroma";
+
+const PROCESSED_DIR = path.join(__dirname, "../../data/processed");
+const STATIC_URL_PREFIX_PROCESSED = "/static/processed";
 
 async function fetchAndSaveBackgrounds(): Promise<BackgroundDownloadResponse> {
   if (!fs.existsSync(BACKGROUND_DIR)) {
@@ -100,9 +105,52 @@ async function listChromas(): Promise<ChromaImage[]> {
   }));
 }
 
+async function fetchAndSaveProcessed(): Promise<ProcessedDownloadResponse> {
+  if (!fs.existsSync(PROCESSED_DIR)) {
+    fs.mkdirSync(PROCESSED_DIR, { recursive: true });
+  }
+
+  const response = await fetchProcessedZip();
+
+  if (response.status !== 200) {
+    throw new Error(
+      `Failed to fetch processed images. Status: ${response.status}`
+    );
+  }
+
+  const extractStream = response.data.pipe(
+    unzipper.Extract({ path: PROCESSED_DIR })
+  );
+
+  await new Promise((resolve, reject) => {
+    extractStream.on("close", resolve);
+    extractStream.on("error", reject);
+  });
+
+  return {
+    message: "Processed images downloaded and extracted successfully",
+    targetDir: PROCESSED_DIR,
+  };
+}
+
+async function listProcessed(): Promise<ProcessedImage[]> {
+  const files = await fsp.readdir(PROCESSED_DIR);
+  const imageFiles = files.filter((file) =>
+    /\.(jpg|jpeg|png|gif|bmp)$/i.test(file)
+  );
+
+  return imageFiles.map((file, idx) => ({
+    id: `processed-${idx}`,
+    name: file,
+    url: `${STATIC_URL_PREFIX_PROCESSED}/${file}`,
+  }));
+}
+
 export const imageService = {
   fetchAndSaveBackgrounds,
   listBackgrounds,
   listChromas,
   fetchAndSaveChromas,
+  fetchAndSaveProcessed,
+  listProcessed,
 };

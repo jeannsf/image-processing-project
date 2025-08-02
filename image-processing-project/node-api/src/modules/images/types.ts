@@ -57,3 +57,15 @@ export interface ChromaListResponse {
   message: string;
   chromas: ChromaImage[];
 }
+
+
+export type ProcessedDownloadResponse = {
+  message: string;
+  targetDir: string;
+};
+
+export type ProcessedImage = {
+  id: string;
+  name: string;
+  url: string;
+};
