@@ -1,4 +1,4 @@
-import { fetchBackgroundZip, fetchChromaZip, fetchProcessedZip } from "../../utils/apiClient";
+import { deleteImageOnPython, fetchBackgroundZip, fetchChromaZip, fetchProcessedZip } from "../../utils/apiClient";
 import path from "path";
 import {
   Background,
@@ -20,6 +20,13 @@ const STATIC_URL_PREFIX_CHROMA = "/static/chroma";
 
 const PROCESSED_DIR = path.join(__dirname, "../../data/processed");
 const STATIC_URL_PREFIX_PROCESSED = "/static/processed";
+
+const DIR_MAP: Record<string, string> = {
+  chroma: path.join(__dirname, "../../data/chroma"),
+  backgrounds: path.join(__dirname, "../../data/backgrounds"),
+  processed: path.join(__dirname, "../../data/processed"),
+};
+
 
 async function fetchAndSaveBackgrounds(): Promise<BackgroundDownloadResponse> {
   if (!fs.existsSync(BACKGROUND_DIR)) {
@@ -146,6 +153,23 @@ async function listProcessed(): Promise<ProcessedImage[]> {
   }));
 }
 
+ async function deleteImage(filename: string, location: string): Promise<void> {
+  if (!filename || !location || !(location in DIR_MAP)) {
+    throw new Error("Invalid filename or location");
+  }
+
+  await deleteImageOnPython(filename, location);
+
+  const dirPath = DIR_MAP[location];
+  const filePath = path.resolve(path.join(dirPath, filename));
+
+  if (!filePath.startsWith(dirPath)) {
+    throw new Error("Invalid file path");
+  }
+
+  await fsp.unlink(filePath);
+}
+
 export const imageService = {
   fetchAndSaveBackgrounds,
   listBackgrounds,
@@ -153,4 +177,5 @@ export const imageService = {
   fetchAndSaveChromas,
   fetchAndSaveProcessed,
   listProcessed,
+  deleteImage,
 };

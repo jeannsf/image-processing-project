@@ -1,3 +1,4 @@
+from typing_extensions import Literal
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -5,7 +6,8 @@ from app.utils.file_utils import save_upload_file
 from app.services.image_processor import get_all_processed_images, process_image
 from app.services.get_backgrounds import get_all_background_images
 from app.services.chroma_service import get_all_chroma_images
-from app.core.config import INPUT_DIR, OUTPUT_DIR
+from app.services.image_service import delete_image_file
+from app.core.config import INPUT_DIR
 
 import os
 
@@ -13,6 +15,11 @@ router = APIRouter()
 
 class FilenameRequest(BaseModel):
     filename: str
+
+
+class DeleteImageRequest(BaseModel):
+    filename: str
+    location: Literal["chroma", "backgrounds", "output"]
 
 @router.post("/process")
 def process_by_filename(data: FilenameRequest):
@@ -72,3 +79,8 @@ def download_all_processed_images():
         return get_all_processed_images()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/image")
+def delete_image(data: DeleteImageRequest):
+    delete_image_file(data.filename, data.location)
+    return {"message": f"File '{data.filename}' deleted from '{data.location}'."}

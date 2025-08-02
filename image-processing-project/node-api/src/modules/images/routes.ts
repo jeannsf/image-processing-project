@@ -8,4 +8,5 @@ export default async function (app: FastifyInstance) {
   app.get("/chromas/list", imageController.listChroma);
   app.get("/processed", imageController.fetchAllProcessed);
   app.get("/processed/list", imageController.listProcessed);
+  app.delete("", imageController.deleteImageHandler);
 }

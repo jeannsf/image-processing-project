@@ -8,6 +8,11 @@ import type {
   ChromaListResponse,
 } from "./types";
 
+interface DeleteImageBody {
+  filename: string;
+  location: "chroma" | "backgrounds" | "processed";
+}
+
 async function fetchAll(request: FastifyRequest, reply: FastifyReply) {
   try {
     const result: BackgroundDownloadResponse =
@@ -41,7 +46,8 @@ async function list(request: FastifyRequest, reply: FastifyReply) {
 
 async function fetchAllChroma(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const result: ChromaDownloadResponse = await imageService.fetchAndSaveChromas();
+    const result: ChromaDownloadResponse =
+      await imageService.fetchAndSaveChromas();
     return reply.send(result);
   } catch (error) {
     const errorResponse: ErrorResponse = {
@@ -96,6 +102,23 @@ async function listProcessed(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
+async function deleteImageHandler(
+  request: FastifyRequest<{ Body: DeleteImageBody }>,
+  reply: FastifyReply
+) {
+  const { filename, location } = request.body;
+
+  try {
+    await imageService.deleteImage(filename, location);
+    reply.send({
+      message: `File '${filename}' deleted from '${location}' successfully.`,
+    });
+  } catch (error: any) {
+    reply
+      .status(500)
+      .send({ message: error.message || "Failed to delete image" });
+  }
+}
 
 export const imageController = {
   fetchAll,
@@ -104,4 +127,5 @@ export const imageController = {
   listChroma,
   fetchAllProcessed,
   listProcessed,
+  deleteImageHandler,
 };
