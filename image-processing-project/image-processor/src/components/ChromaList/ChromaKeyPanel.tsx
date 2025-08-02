@@ -2,21 +2,14 @@ import React from "react";
 import { useDropzone } from "react-dropzone";
 import styles from "./ChromaKeyPanel.module.css";
 import { ChromaImage } from "../../types";
-import {
-  uploadChromaImage,
-  fetchChromas,
-  uploadAndRefreshChromas,
-} from "../../services/api";
+import { uploadAndRefreshChromas, deleteImage } from "../../services/api";
 
 interface ChromaKeyPanelProps {
   images: ChromaImage[];
   onChange: (imgs: ChromaImage[]) => void;
 }
 
-const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({
-  images,
-  onChange,
-}) => {
+const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({ images, onChange }) => {
   const onDrop = async (acceptedFiles: File[]) => {
     try {
       for (const file of acceptedFiles) {
@@ -34,8 +27,17 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({
     multiple: true,
   });
 
-  const handleRemove = (id: string) => {
-    onChange(images.filter((img) => img.id !== id));
+  const handleRemove = async (img: ChromaImage) => {
+    try {
+      if (!img.name) {
+        console.warn("Image name missing, cannot delete");
+        return;
+      }
+      const updatedList = await deleteImage(img.name, "chroma");
+      onChange(updatedList as ChromaImage[]);
+    } catch (error) {
+      console.error("Failed to delete chroma image:", error);
+    }
   };
 
   return (
@@ -65,7 +67,7 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({
               />
               <button
                 type="button"
-                onClick={() => handleRemove(img.id)}
+                onClick={() => handleRemove(img)}
                 className={styles.removeButton}
               >
                 ×

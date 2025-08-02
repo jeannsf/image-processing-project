@@ -41,6 +41,11 @@ export interface ProcessedImage {
   url: string;
 }
 
+export interface DeleteImageResponse {
+  message: string;
+}
+
+
 export async function fetchBackgrounds(): Promise<Background[]> {
   const response = await fetch(`${API_URL}/images/backgrounds/list`);
   if (!response.ok) {
@@ -177,4 +182,32 @@ export async function fetchProcessedResults(): Promise<ResultImage[]> {
     name: item.name,
     url: `${API_URL}${item.url}`,
   }));
+}
+
+
+export async function deleteImage(
+  filename: string,
+  location: "chroma" | "backgrounds" | "processed"
+): Promise<ChromaImage[] | ResultImage[]> {
+  const response = await fetch(`${API_URL}/images`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ filename, location }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete image");
+  }
+
+  if (location === "chroma") {
+    return fetchChromas();
+  }
+
+  if (location === "processed") {
+    return fetchProcessedResults();
+  }
+
+  return [];
 }
