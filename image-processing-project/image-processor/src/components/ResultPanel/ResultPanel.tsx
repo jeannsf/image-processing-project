@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { ResultImage } from "../../types";
 import { downloadImage } from "../../utils/download";
 import { Download, Trash2 } from "lucide-react";
 import { deleteImage } from "../../services/api";
+import ResultModal from "../ResultModal/ResultModal";
 
 import styles from "./ResultPanel.module.css";
 
@@ -13,6 +14,8 @@ interface ResultPanelProps {
 }
 
 const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange }) => {
+  const [selectedImage, setSelectedImage] = useState<ResultImage | null>(null);
+
   const handleDelete = async (img: ResultImage) => {
     if (!img.name) {
       console.warn("Image name missing, cannot delete");
@@ -22,6 +25,7 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange })
     try {
       const updatedResults = await deleteImage(img.name, "processed");
       onChange(updatedResults as ResultImage[]);
+      setSelectedImage(null);
     } catch (error) {
       console.error("Failed to delete processed image:", error);
     }
@@ -42,7 +46,12 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange })
         {results.map((res) => (
           <div key={res.id} className={styles.item}>
             <div className={styles.imageWrapper}>
-              <img src={res.url} alt="Resultado" className={styles.image} />
+              <img
+                src={res.url}
+                alt="Resultado"
+                className={styles.image}
+                onClick={() => setSelectedImage(res)}
+              />
 
               <Download
                 className={`${styles.downloadIcon} ${styles.leftIcon}`}
@@ -59,6 +68,13 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange })
           </div>
         ))}
       </div>
+
+      {selectedImage && (
+        <ResultModal
+          image={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
   );
 };
