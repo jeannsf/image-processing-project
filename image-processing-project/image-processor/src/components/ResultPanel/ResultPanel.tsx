@@ -4,7 +4,6 @@ import { downloadImage } from "../../utils/download";
 import { Download, Trash2 } from "lucide-react";
 import { deleteImage } from "../../services/api";
 import ResultModal from "../ResultModal/ResultModal";
-
 import styles from "./ResultPanel.module.css";
 
 interface ResultPanelProps {
@@ -16,19 +15,23 @@ interface ResultPanelProps {
 const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange }) => {
   const [selectedImage, setSelectedImage] = useState<ResultImage | null>(null);
 
-  const handleDelete = async (img: ResultImage) => {
+  const handleDelete = async (e: React.MouseEvent, img: ResultImage) => {
+    e.stopPropagation(); 
     if (!img.name) {
       console.warn("Image name missing, cannot delete");
       return;
     }
-
     try {
       const updatedResults = await deleteImage(img.name, "processed");
       onChange(updatedResults as ResultImage[]);
-      setSelectedImage(null);
     } catch (error) {
       console.error("Failed to delete processed image:", error);
     }
+  };
+
+  const handleDownload = (e: React.MouseEvent, img: ResultImage) => {
+    e.stopPropagation(); 
+    downloadImage(img.url, `resultado-${img.id}.png`);
   };
 
   return (
@@ -38,31 +41,32 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ results, loading, onChange })
       {loading && (
         <div className={styles.overlay}>
           <div className={styles.spinner} />
-          Processando...
+          <span>Processando...</span>
         </div>
       )}
 
       <div className={styles.grid}>
         {results.map((res) => (
-          <div key={res.id} className={styles.item}>
-            <div className={styles.imageWrapper}>
-              <img
-                src={res.url}
-                alt="Resultado"
-                className={styles.image}
-                onClick={() => setSelectedImage(res)}
-              />
+          <div
+            key={res.id}
+            className={styles.imageCard}
+            onClick={() => setSelectedImage(res)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setSelectedImage(res)}
+          >
+            <img src={res.url} alt={`Resultado ${res.id}`} className={styles.image} />
 
+            <div className={styles.actionsOverlay}>
               <Download
-                className={`${styles.downloadIcon} ${styles.leftIcon}`}
-                size={15}
-                onClick={() => downloadImage(res.url, `resultado-${res.id}.png`)}
+                className={`${styles.icon} ${styles.downloadIcon}`}
+                size={20}
+                onClick={(e) => handleDownload(e, res)}
               />
-
               <Trash2
-                className={`${styles.downloadIcon} ${styles.rightIcon}`}
-                size={15}
-                onClick={() => handleDelete(res)}
+                className={`${styles.icon} ${styles.deleteIcon}`}
+                size={20}
+                onClick={(e) => handleDelete(e, res)}
               />
             </div>
           </div>

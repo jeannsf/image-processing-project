@@ -13,71 +13,61 @@ import {
 } from "./services/api";
 
 const App: React.FC = () => {
-  const [selectedBackgrounds, setSelectedBackgrounds] = useState<Background[]>(
-    []
-  );
+  const [selectedBackground, setSelectedBackground] = useState<Background | null>(null);
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [chromaImages, setChromaImages] = useState<ChromaImage[]>([]);
   const [results, setResults] = useState<ResultImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    fetchBackgrounds()
-      .then(setBackgrounds)
-      .catch((error) => {
-        console.error("Failed to fetch backgrounds:", error);
-      });
-
-    fetchChromas()
-      .then(setChromaImages)
-      .catch((error) => {
-        console.error("Failed to fetch chromas:", error);
-      });
-
-    fetchProcessedResults()
-      .then(setResults)
-      .catch((error) => {
-        console.error("Failed to fetch processed images:", error);
-      });
+    fetchBackgrounds().then(setBackgrounds).catch(console.error);
+    fetchChromas().then(setChromaImages).catch(console.error);
+    fetchProcessedResults().then(setResults).catch(console.error);
   }, []);
 
   const handleProcess = async () => {
-    if (chromaImages.length === 0) return;
-
     setIsProcessing(true);
-
     try {
-      const chroma = chromaImages[0];
+      const chroma = chromaImages[0]; 
       if (!chroma.name) {
-        throw new Error("Chroma image does not have a filename.");
+        throw new Error("A imagem de chroma não possui um nome de arquivo.");
       }
 
-      const processedImages = await processAndRefreshProcessedImages(
-        chroma.name
-      );
-
+      const processedImages = await processAndRefreshProcessedImages(chroma.name);
       setResults(processedImages);
     } catch (error) {
-      console.error("Error processing image:", error);
+      console.error("Erro ao processar imagem:", error);
+      alert("Ocorreu um erro durante o processamento.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className={styles.appContainer}>
-      <Sidebar
-        items={backgrounds}
-        selected={selectedBackgrounds}
-        onSelect={setSelectedBackgrounds}
-      />
+    <>
+      <div className={styles.appContainer}>
+        <Sidebar
+          items={backgrounds}
+          selected={selectedBackground ? [selectedBackground] : []}
+          onSelect={setSelectedBackground}
+        />
 
-      <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
+        <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
 
-      <ResultPanel results={results} loading={isProcessing} onChange={setResults} />
+        <div className={styles.resultsPanel}>
+          <ResultPanel results={results} loading={isProcessing} onChange={setResults} />
+        </div>
+      </div>
 
-      <ProcessButton onClick={handleProcess} className={styles.processButton} />
-    </div>
+      <div className={styles.actionBar}>
+        <ProcessButton
+          onClick={handleProcess}
+          className={styles.processButton}
+        >
+          {isProcessing ? "Processando..." : "Gerar Resultado"}
+        </ProcessButton>
+      </div>
+    </>
   );
 };
 

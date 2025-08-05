@@ -1,13 +1,13 @@
-import React from 'react'
-import styles from './ProcessButton.module.css'
-import { Play } from 'lucide-react' // ou qualquer biblioteca que estiver usando
+import React from 'react';
+import styles from './ProcessButton.module.css';
+import { Play } from 'lucide-react'; 
 
 interface ProcessButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  onClick: () => void
-  disabled?: boolean
-  className?: string
-  children?: React.ReactNode
-  showIcon?: boolean
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+  showIcon?: boolean;
 }
 
 const ProcessButton: React.FC<ProcessButtonProps> = ({
@@ -26,8 +26,8 @@ const ProcessButton: React.FC<ProcessButtonProps> = ({
     {...rest}
   >
     {showIcon && <Play size={18} className={styles.icon} />}
-    {children}
+    <span>{children}</span>
   </button>
-)
+);
 
-export default ProcessButton
+export default ProcessButton;

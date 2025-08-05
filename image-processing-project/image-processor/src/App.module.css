@@ -1,80 +1,67 @@
-:root {
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
+/* App.module.css */
 
-  --color-bg: #f5f7fa;
-  --color-panel-bg: #ffffff;
-  --color-primary: #4a90e2;
-  --color-accent: #f39c12;
-  --color-text: #333333;
-  --color-border: #e1e4e8;
-
-  --transition-fast: 0.2s ease-in-out;
-  --transition-default: 0.3s ease;
+/* Estilo global para o corpo da página */
+body {
+  background-color: #121212; /* Fundo principal muito escuro */
+  color: #f0f0f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
+/* Contêiner principal da aplicação */
 .appContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  background-color: var(--color-bg);
-
-  max-width: 1200px;
-  width: 100%;
-  margin: auto;
-  
+  /* Define um layout de 3 colunas com o painel de resultados sendo mais largo */
+  grid-template-columns: 300px 300px 1fr;
+  grid-template-rows: 1fr; /* Linha única que se estica */
+  gap: 1.5rem; /* Espaçamento entre os painéis */
+  padding: 2rem;
+  padding-bottom: 100px; /* Espaço extra na parte inferior para a barra de ações */
+  height: 100vh;
   box-sizing: border-box;
 }
 
-.processButton {
-  grid-column: 1 / -1;
-  justify-self: center;
-  position: sticky;
-  bottom: var(--spacing-md);
-}
-
-.heading {
-  color: var(--color-text);
-  margin-bottom: var(--spacing-md);
-  font-size: 1.25rem;
-}
-
-.panel {
-  background-color: var(--color-panel-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: var(--spacing-md);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* Barra de Ações Fixa */
+.actionBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(18, 18, 18, 1) 50%, transparent 100%);
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 100; /* Garante que fique acima do conteúdo */
+  pointer-events: none; /* Permite cliques "através" da barra, exceto no botão */
 }
 
-.panelScrollable {
-  overflow-y: auto;
+/* Botão de Processar dentro da barra de ações */
+.processButton {
+  pointer-events: all; /* Torna o botão clicável novamente */
+  min-width: 200px; /* Largura mínima para destaque */
 }
 
-.card {
-  background-color: var(--color-panel-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  cursor: pointer;
-  overflow: hidden;
+/* Responsividade para telas menores */
+@media (max-width: 1200px) {
+  .appContainer {
+    /* Muda para 2 colunas, com resultados abaixo */
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto; /* As linhas se ajustam ao conteúdo */
+  }
+
+  /* Faz o painel de resultados ocupar a largura total na nova linha */
+  .resultsPanel {
+    grid-column: 1 / -1;
+  }
 }
 
-.card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+@media (max-width: 768px) {
+  .appContainer {
+    /* Empilha tudo em uma única coluna em telas de celular */
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    padding-bottom: 100px; /* Mantém o espaço para a barra de ações */
+  }
 }
-
-
-.cardSelected {
-  border-color: var(--color-primary);
-}
-
-

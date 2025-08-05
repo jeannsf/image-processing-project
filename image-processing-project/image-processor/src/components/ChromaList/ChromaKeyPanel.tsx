@@ -18,10 +18,11 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({ images, onChange }) => 
         onChange(updatedList);
       }
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error("Falha no upload:", error);
+      alert("Ocorreu um erro ao enviar a imagem. Tente novamente.");
+    } finally {
     }
   };
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "image/*": [] },
@@ -47,17 +48,13 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({ images, onChange }) => 
 
       <div
         {...getRootProps()}
-        className={`${styles.dropzone} ${
-          isDragActive ? styles.dropzoneActive : ""
-        }`}
+        className={`${styles.dropzone} ${isDragActive ? styles.dropzoneActive : ""}`}
       >
         <input {...getInputProps()} />
-        <UploadCloud size={40} />
-        <div className={styles.dropzoneText}>
-          {isDragActive
-            ? "Solte as imagens aqui"
-            : "Arraste imagens ou clique para selecionar"}
-        </div>
+        <UploadCloud size={32} />
+        <p className={styles.dropzoneText}>
+          {isDragActive ? "Solte para enviar" : "Arraste ou clique para enviar imagens"}
+        </p>
       </div>
 
       {images.length > 0 && (
@@ -71,8 +68,12 @@ const ChromaKeyPanel: React.FC<ChromaKeyPanelProps> = ({ images, onChange }) => 
               />
               <button
                 type="button"
-                onClick={() => handleRemove(img)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemove(img);
+                }}
                 className={styles.removeButton}
+                aria-label="Remover imagem"
               >
                 ×
               </button>
