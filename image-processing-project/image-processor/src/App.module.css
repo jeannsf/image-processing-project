@@ -1,28 +1,22 @@
-/* App.module.css */
-
-/* Estilo global para o corpo da página */
 body {
-  background-color: #121212; /* Fundo principal muito escuro */
+  background-color: #121212; 
   color: #f0f0f0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* Contêiner principal da aplicação */
 .appContainer {
   display: grid;
-  /* Define um layout de 3 colunas com o painel de resultados sendo mais largo */
   grid-template-columns: 300px 300px 1fr;
-  grid-template-rows: 1fr; /* Linha única que se estica */
-  gap: 1.5rem; /* Espaçamento entre os painéis */
+  grid-template-rows: 1fr; 
+  gap: 1.5rem; 
   padding: 2rem;
-  padding-bottom: 100px; /* Espaço extra na parte inferior para a barra de ações */
+  padding-bottom: 100px; 
   height: 100vh;
   box-sizing: border-box;
 }
 
-/* Barra de Ações Fixa */
 .actionBar {
   position: fixed;
   bottom: 0;
@@ -33,25 +27,45 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100; /* Garante que fique acima do conteúdo */
-  pointer-events: none; /* Permite cliques "através" da barra, exceto no botão */
+  gap: 1rem; 
+  z-index: 100;
+  pointer-events: none; 
 }
 
-/* Botão de Processar dentro da barra de ações */
 .processButton {
-  pointer-events: all; /* Torna o botão clicável novamente */
-  min-width: 200px; /* Largura mínima para destaque */
+  pointer-events: all; 
+  min-width: 200px;
 }
 
-/* Responsividade para telas menores */
+.individualEditorButton {
+  pointer-events: all; 
+  min-width: 160px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  background-color: #17a2b8; 
+  color: white;
+}
+
+.individualEditorButton:hover {
+  background-color: #138496;
+  transform: translateY(-1px);
+}
+
+.individualEditorButton:active {
+  transform: scale(0.97);
+}
+
 @media (max-width: 1200px) {
   .appContainer {
-    /* Muda para 2 colunas, com resultados abaixo */
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto; /* As linhas se ajustam ao conteúdo */
+    grid-template-rows: auto; 
   }
 
-  /* Faz o painel de resultados ocupar a largura total na nova linha */
   .resultsPanel {
     grid-column: 1 / -1;
   }
@@ -59,9 +73,19 @@ body {
 
 @media (max-width: 768px) {
   .appContainer {
-    /* Empilha tudo em uma única coluna em telas de celular */
     grid-template-columns: 1fr;
     padding: 1rem;
-    padding-bottom: 100px; /* Mantém o espaço para a barra de ações */
+    padding-bottom: 100px; 
+  }
+
+  .actionBar {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .individualEditorButton,
+  .processButton {
+    width: 100%;
+    max-width: 300px;
   }
 }

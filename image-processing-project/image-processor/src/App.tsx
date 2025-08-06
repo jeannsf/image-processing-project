@@ -3,6 +3,7 @@ import Sidebar from "./components/SideBar/Sidebar";
 import ChromaKeyPanel from "./components/ChromaList/ChromaKeyPanel";
 import ResultPanel from "./components/ResultPanel/ResultPanel";
 import ProcessButton from "./components/PorcessButton/ProcessButton";
+import IndividualEditor from "./components/IndividualEditor/IndividualEditor";
 import { Background, ChromaImage, ResultImage } from "./types";
 import styles from "./App.module.css";
 import {
@@ -18,6 +19,8 @@ const App: React.FC = () => {
   const [chromaImages, setChromaImages] = useState<ChromaImage[]>([]);
   const [results, setResults] = useState<ResultImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  const [isIndividualEditorOpen, setIsIndividualEditorOpen] = useState(false);
 
   useEffect(() => {
     fetchBackgrounds().then(setBackgrounds).catch(console.error);
@@ -43,6 +46,14 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOpenIndividualEditor = () => {
+    setIsIndividualEditorOpen(true);
+  };
+
+  const handleCloseIndividualEditor = () => {
+    setIsIndividualEditorOpen(false);
+  };
+
   return (
     <>
       <div className={styles.appContainer}>
@@ -60,6 +71,13 @@ const App: React.FC = () => {
       </div>
 
       <div className={styles.actionBar}>
+        <button
+          className={styles.individualEditorButton}
+          onClick={handleOpenIndividualEditor}
+        >
+          Editor Individual
+        </button>
+        
         <ProcessButton
           onClick={handleProcess}
           className={styles.processButton}
@@ -67,6 +85,14 @@ const App: React.FC = () => {
           {isProcessing ? "Processando..." : "Gerar Resultado"}
         </ProcessButton>
       </div>
+
+      {isIndividualEditorOpen && (
+        <IndividualEditor
+          backgrounds={backgrounds}
+          chromaImages={chromaImages}
+          onClose={handleCloseIndividualEditor}
+        />
+      )}
     </>
   );
 };
