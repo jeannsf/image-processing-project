@@ -211,3 +211,46 @@ export async function deleteImage(
 
   return [];
 }
+
+export async function uploadAndProcessGeneratedImage(
+  file: File
+): Promise<ProcessedImage[]> {
+  const formData = new FormData();
+  formData.append("file", file, file.name || "generated-image.png");
+
+  const uploadResponse = await fetch(`${PY_API_URL}/generated`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("Falha ao enviar imagem gerada");
+  }
+
+  const uploadData = await uploadResponse.json();
+  const filename = uploadData.filename;
+
+  const processedZipResponse = await fetch(`${API_URL}/images/processed`, {
+    method: "GET",
+  });
+
+  if (!processedZipResponse.ok) {
+    throw new Error("Falha ao baixar o zip com as imagens processadas");
+  }
+
+  const listResponse = await fetch(`${API_URL}/images/processed/list`, {
+    method: "GET",
+  });
+
+  if (!listResponse.ok) {
+    throw new Error("Falha ao obter lista de imagens processadas");
+  }
+
+  const listData = await listResponse.json();
+
+  return listData.processed.map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    url: `${API_URL}${item.url}`,
+  }));
+}

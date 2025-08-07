@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { Background, ChromaImage } from "../../types";
 import styles from "./IndividualEditor.module.css";
 import { removeBackground } from "@imgly/background-removal";
+import { uploadAndProcessGeneratedImage } from "../../services/api";
 
 interface IndividualEditorProps {
   backgrounds: Background[];
   chromaImages: ChromaImage[];
   onClose: () => void;
+  onImageExported: () => void; 
 }
 
 interface ChromaStyles {
@@ -33,16 +35,25 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
   backgrounds,
   chromaImages,
   onClose,
+  onImageExported,
 }) => {
-  const [selectedBackground, setSelectedBackground] = useState<Background | null>(null);
-  const [selectedChroma, setSelectedChroma] = useState<ChromaImage | null>(null);
+  const [selectedBackground, setSelectedBackground] =
+    useState<Background | null>(null);
+  const [selectedChroma, setSelectedChroma] = useState<ChromaImage | null>(
+    null
+  );
   const [chromaStyles, setChromaStyles] = useState<ChromaStyles>(defaultStyles);
-  const [processedChromaImages, setProcessedChromaImages] = useState<ChromaImage[]>([]);
+  const [processedChromaImages, setProcessedChromaImages] = useState<
+    ChromaImage[]
+  >([]);
   const [isProcessingGrid, setIsProcessingGrid] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleStyleChange = (property: keyof ChromaStyles, value: any) => {
-    setChromaStyles(prev => ({
+    setChromaStyles((prev) => ({
       ...prev,
       [property]: value,
     }));
@@ -52,20 +63,121 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
     setChromaStyles(defaultStyles);
   };
 
-  const handleExport = () => {
-    // Aqui seria implementada a lógica de exportação/download da imagem composta
-    // Por enquanto, apenas mostra um alert
-    alert("Funcionalidade de exportação será implementada!");
+  const handleExport = async () => {
+    if (!selectedBackground || !selectedChroma) {
+      alert("Por favor, selecione um background e uma imagem chroma.");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        throw new Error("Canvas não disponível.");
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Contexto do canvas não disponível.");
+      }
+
+      const backgroundImage = new Image();
+      backgroundImage.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        backgroundImage.onload = () => resolve();
+        backgroundImage.onerror = reject;
+        backgroundImage.src = selectedBackground.url;
+      });
+
+      const chromaImage = new Image();
+      chromaImage.crossOrigin = "anonymous";
+      const chromaImageUrl = getImageUrlForPreview();
+      if (!chromaImageUrl) {
+        throw new Error(
+          "URL da imagem chroma para pré-visualização não disponível."
+        );
+      }
+      await new Promise<void>((resolve, reject) => {
+        chromaImage.onload = () => resolve();
+        chromaImage.onerror = reject;
+        chromaImage.src = chromaImageUrl;
+      });
+
+      canvas.width = backgroundImage.naturalWidth;
+      canvas.height = backgroundImage.naturalHeight;
+
+      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+
+      const scaleX = chromaStyles.flipHorizontal ? -1 : 1;
+      const scaleY = chromaStyles.flipVertical ? -1 : 1;
+
+      const imgWidth = chromaImage.naturalWidth;
+      const imgHeight = chromaImage.naturalHeight;
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      const posX =
+        centerX + ((chromaStyles.positionX - 50) / 100) * canvas.width;
+      const posY =
+        centerY + ((chromaStyles.positionY - 50) / 100) * canvas.height;
+
+      ctx.translate(posX, posY);
+      ctx.rotate((chromaStyles.rotation * Math.PI) / 180);
+      ctx.scale(
+        (chromaStyles.scale / 100) * scaleX,
+        (chromaStyles.scale / 100) * scaleY
+      );
+      ctx.globalAlpha = chromaStyles.opacity / 100;
+
+      ctx.drawImage(
+        chromaImage,
+        -imgWidth / 2,
+        -imgHeight / 2,
+        imgWidth,
+        imgHeight
+      );
+
+      ctx.restore();
+
+      const blob: Blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to create blob from canvas"));
+          }
+        }, "image/png");
+      });
+
+      const file = new File([blob], "exported-image.png", {
+        type: "image/png",
+      });
+
+      await uploadAndProcessGeneratedImage(file);
+      onImageExported();
+      onClose();
+    } catch (error) {
+      console.error("Erro ao exportar imagem:", error);
+      alert(`Erro ao exportar imagem: ${(error as Error).message}`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const processChromaImage = async (chromaImage: ChromaImage): Promise<ChromaImage> => {
+  const processChromaImage = async (
+    chromaImage: ChromaImage
+  ): Promise<ChromaImage> => {
     try {
       const imageUrl = chromaImage.previewUrl || chromaImage.url;
       if (!imageUrl) return chromaImage;
 
       const img = new Image();
       img.crossOrigin = "anonymous";
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -73,17 +185,16 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
       });
 
       const blob = await removeBackground(imageUrl);
-      
+
       const processedUrl = URL.createObjectURL(blob);
-      
+
       return {
         ...chromaImage,
-        processedUrl
+        processedUrl,
       };
-      
     } catch (error) {
       console.error(`Erro ao processar imagem ${chromaImage.name}:`, error);
-      return chromaImage; 
+      return chromaImage;
     }
   };
 
@@ -93,15 +204,15 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
 
       setIsProcessingGrid(true);
       setProcessedCount(0);
-      
+
       const processed: ChromaImage[] = [];
-      
+
       for (let i = 0; i < chromaImages.length; i++) {
         const processedImage = await processChromaImage(chromaImages[i]);
         processed.push(processedImage);
         setProcessedCount(i + 1);
       }
-      
+
       setProcessedChromaImages(processed);
       setIsProcessingGrid(false);
     };
@@ -109,7 +220,7 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
     processAllChromaImages();
 
     return () => {
-      processedChromaImages.forEach(img => {
+      processedChromaImages.forEach((img) => {
         if (img.processedUrl && img.processedUrl.startsWith("blob:")) {
           URL.revokeObjectURL(img.processedUrl);
         }
@@ -120,7 +231,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
   const getChromaPreviewStyle = () => {
     return {
       transform: `
-        translate(${chromaStyles.positionX - 50}%, ${chromaStyles.positionY - 50}%)
+        translate(${chromaStyles.positionX - 50}%, ${
+        chromaStyles.positionY - 50
+      }%)
         scale(${chromaStyles.scale / 100})
         rotate(${chromaStyles.rotation}deg)
         scaleX(${chromaStyles.flipHorizontal ? -1 : 1})
@@ -134,16 +247,30 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
     if (isProcessingGrid) {
       return chroma.previewUrl || chroma.url || "/placeholder-image.png";
     }
-    
-    const processedImage = processedChromaImages.find(img => img.id === chroma.id);
-    return processedImage?.processedUrl || chroma.previewUrl || chroma.url || "/placeholder-image.png";
+
+    const processedImage = processedChromaImages.find(
+      (img) => img.id === chroma.id
+    );
+    return (
+      processedImage?.processedUrl ||
+      chroma.previewUrl ||
+      chroma.url ||
+      "/placeholder-image.png"
+    );
   };
 
   const getImageUrlForPreview = () => {
     if (!selectedChroma) return null;
-    
-    const processedImage = processedChromaImages.find(img => img.id === selectedChroma.id);
-    return processedImage?.processedUrl || selectedChroma.previewUrl || selectedChroma.url || "/placeholder-image.png";
+
+    const processedImage = processedChromaImages.find(
+      (img) => img.id === selectedChroma.id
+    );
+    return (
+      processedImage?.processedUrl ||
+      selectedChroma.previewUrl ||
+      selectedChroma.url ||
+      "/placeholder-image.png"
+    );
   };
 
   return (
@@ -176,13 +303,13 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
 
         <div className={styles.selectionPanel}>
           <h3>Selecionar Imagem Chroma</h3>
-          
+
           {isProcessingGrid && (
             <div className={styles.gridProcessingIndicator}>
               Processando imagens... ({processedCount}/{chromaImages.length})
             </div>
           )}
-          
+
           <div className={styles.imageGrid}>
             {chromaImages.map((chroma) => (
               <div
@@ -192,9 +319,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                 } ${isProcessingGrid ? styles.processing : ""}`}
                 onClick={() => setSelectedChroma(chroma)}
               >
-                <img 
-                  src={getImageUrlForGrid(chroma)} 
-                  alt={chroma.name} 
+                <img
+                  src={getImageUrlForGrid(chroma)}
+                  alt={chroma.name}
                   className={styles.chromaGridImage}
                 />
                 <span>{chroma.name}</span>
@@ -226,12 +353,13 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     style={getChromaPreviewStyle()}
                   />
                 )}
+                <canvas ref={canvasRef} style={{ display: "none" }} />
               </div>
             </div>
 
             <div className={styles.controlsSection}>
               <h3>Controles de Estilização</h3>
-              
+
               <div className={styles.controls}>
                 <label>
                   Tamanho: {chromaStyles.scale}%
@@ -240,7 +368,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     min="10"
                     max="200"
                     value={chromaStyles.scale}
-                    onChange={(e) => handleStyleChange("scale", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleStyleChange("scale", parseInt(e.target.value))
+                    }
                   />
                 </label>
 
@@ -251,7 +381,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     min="0"
                     max="100"
                     value={chromaStyles.positionX}
-                    onChange={(e) => handleStyleChange("positionX", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleStyleChange("positionX", parseInt(e.target.value))
+                    }
                   />
                 </label>
 
@@ -262,7 +394,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     min="0"
                     max="100"
                     value={chromaStyles.positionY}
-                    onChange={(e) => handleStyleChange("positionY", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleStyleChange("positionY", parseInt(e.target.value))
+                    }
                   />
                 </label>
 
@@ -273,7 +407,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     min="-180"
                     max="180"
                     value={chromaStyles.rotation}
-                    onChange={(e) => handleStyleChange("rotation", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleStyleChange("rotation", parseInt(e.target.value))
+                    }
                   />
                 </label>
 
@@ -284,7 +420,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     min="0"
                     max="100"
                     value={chromaStyles.opacity}
-                    onChange={(e) => handleStyleChange("opacity", parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleStyleChange("opacity", parseInt(e.target.value))
+                    }
                   />
                 </label>
 
@@ -293,7 +431,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     <input
                       type="checkbox"
                       checked={chromaStyles.flipHorizontal}
-                      onChange={(e) => handleStyleChange("flipHorizontal", e.target.checked)}
+                      onChange={(e) =>
+                        handleStyleChange("flipHorizontal", e.target.checked)
+                      }
                     />
                     Espelhar Horizontalmente
                   </label>
@@ -302,7 +442,9 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                     <input
                       type="checkbox"
                       checked={chromaStyles.flipVertical}
-                      onChange={(e) => handleStyleChange("flipVertical", e.target.checked)}
+                      onChange={(e) =>
+                        handleStyleChange("flipVertical", e.target.checked)
+                      }
                     />
                     Espelhar Verticalmente
                   </label>
@@ -313,8 +455,12 @@ const IndividualEditor: React.FC<IndividualEditorProps> = ({
                 <button className={styles.resetButton} onClick={handleReset}>
                   Resetar
                 </button>
-                <button className={styles.exportButton} onClick={handleExport}>
-                  Exportar Imagem
+                <button
+                  className={styles.exportButton}
+                  onClick={handleExport}
+                  disabled={isExporting}
+                >
+                  {isExporting ? "Exportando..." : "Exportar Imagem"}
                 </button>
               </div>
             </div>

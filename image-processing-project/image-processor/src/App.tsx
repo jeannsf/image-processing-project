@@ -14,12 +14,12 @@ import {
 } from "./services/api";
 
 const App: React.FC = () => {
-  const [selectedBackground, setSelectedBackground] = useState<Background | null>(null);
+  const [selectedBackground, setSelectedBackground] =
+    useState<Background | null>(null);
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [chromaImages, setChromaImages] = useState<ChromaImage[]>([]);
   const [results, setResults] = useState<ResultImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  
   const [isIndividualEditorOpen, setIsIndividualEditorOpen] = useState(false);
 
   useEffect(() => {
@@ -31,12 +31,14 @@ const App: React.FC = () => {
   const handleProcess = async () => {
     setIsProcessing(true);
     try {
-      const chroma = chromaImages[0]; 
+      const chroma = chromaImages[0];
       if (!chroma.name) {
         throw new Error("A imagem de chroma não possui um nome de arquivo.");
       }
 
-      const processedImages = await processAndRefreshProcessedImages(chroma.name);
+      const processedImages = await processAndRefreshProcessedImages(
+        chroma.name
+      );
       setResults(processedImages);
     } catch (error) {
       console.error("Erro ao processar imagem:", error);
@@ -54,6 +56,15 @@ const App: React.FC = () => {
     setIsIndividualEditorOpen(false);
   };
 
+  const refreshResults = async () => {
+    try {
+      const updatedResults = await fetchProcessedResults();
+      setResults(updatedResults);
+    } catch (error) {
+      console.error("Erro ao atualizar resultados:", error);
+    }
+  };
+
   return (
     <>
       <div className={styles.appContainer}>
@@ -66,7 +77,11 @@ const App: React.FC = () => {
         <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
 
         <div className={styles.resultsPanel}>
-          <ResultPanel results={results} loading={isProcessing} onChange={setResults} />
+          <ResultPanel
+            results={results}
+            loading={isProcessing}
+            onChange={setResults}
+          />
         </div>
       </div>
 
@@ -77,11 +92,8 @@ const App: React.FC = () => {
         >
           Editor Individual
         </button>
-        
-        <ProcessButton
-          onClick={handleProcess}
-          className={styles.processButton}
-        >
+
+        <ProcessButton onClick={handleProcess} className={styles.processButton}>
           {isProcessing ? "Processando..." : "Gerar Resultado"}
         </ProcessButton>
       </div>
@@ -91,6 +103,7 @@ const App: React.FC = () => {
           backgrounds={backgrounds}
           chromaImages={chromaImages}
           onClose={handleCloseIndividualEditor}
+          onImageExported={refreshResults}
         />
       )}
     </>

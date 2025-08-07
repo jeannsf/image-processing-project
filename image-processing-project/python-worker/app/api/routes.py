@@ -7,7 +7,7 @@ from app.services.image_processor import get_all_processed_images, process_image
 from app.services.get_backgrounds import get_all_background_images
 from app.services.chroma_service import get_all_chroma_images
 from app.services.image_service import delete_image_file
-from app.core.config import INPUT_DIR
+from app.core.config import INPUT_DIR, OUTPUT_DIR
 
 import os
 
@@ -85,3 +85,23 @@ def delete_image(data: DeleteImageRequest):
     print(f"Deleting image: {data.filename} from {data.location}")
     delete_image_file(data.filename, data.location)
     return {"message": f"File '{data.filename}' deleted from '{data.location}'."}
+
+
+
+@router.post("/generated")
+async def upload_generated_image(file: UploadFile = File(...)):
+    try:
+        saved_path = save_upload_file(file, OUTPUT_DIR)
+        filename = os.path.basename(saved_path)
+        url = f"/static/generated/{filename}"
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Imagem gerada salva com sucesso.",
+                "filename": filename,
+                "url": url,
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
