@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "./components/SideBar/Sidebar";
+import "./App.css";
+
+import Header from "./components/Layout/Header";
+import Sidebar from "./components/Layout/Sidebar";
+import MainContent from "./components/Layout/MainContent";
+
 import ChromaKeyPanel from "./components/ChromaList/ChromaKeyPanel";
 import ResultPanel from "./components/ResultPanel/ResultPanel";
-import ProcessButton from "./components/PorcessButton/ProcessButton";
 import IndividualEditor from "./components/IndividualEditor/IndividualEditor";
-import { Background, ChromaImage, ResultImage } from "./types";
-import styles from "./App.module.css";
+
 import {
   fetchBackgrounds,
   fetchChromas,
@@ -13,22 +16,63 @@ import {
   processAndRefreshProcessedImages,
 } from "./services/api";
 
+import {
+  Background,
+  BackgroundImage,
+  ChromaImage,
+  ProcessedImage,
+  Result,
+  SidebarItemId,
+} from "./types";
+
 const App: React.FC = () => {
   const [selectedBackground, setSelectedBackground] =
-    useState<Background | null>(null);
-  const [backgrounds, setBackgrounds] = useState<Background[]>([]);
+    useState<BackgroundImage | null>(null);
+  const [backgrounds, setBackgrounds] = useState<BackgroundImage[]>([]);
   const [chromaImages, setChromaImages] = useState<ChromaImage[]>([]);
-  const [results, setResults] = useState<ResultImage[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isIndividualEditorOpen, setIsIndividualEditorOpen] = useState(false);
+  const [results, setResults] = useState<ProcessedImage[]>([]);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isIndividualEditorOpen, setIsIndividualEditorOpen] =
+    useState<boolean>(false);
+
+  const [activeSidebarItem, setActiveSidebarItem] =
+    useState<SidebarItemId>("refresh");
+  const [currentView, setCurrentView] = useState<string>("main");
 
   useEffect(() => {
-    fetchBackgrounds().then(setBackgrounds).catch(console.error);
+    fetchBackgrounds()
+      .then((backgrounds: Background[]) => {
+        const backgroundsWithUrl: BackgroundImage[] = backgrounds
+          .filter((bg) => !!bg.url)
+          .map((bg) => ({
+            id: bg.id,
+            name: bg.name,
+            url: bg.url!,
+            thumbnail: bg.thumbnail ?? bg.url!,
+          }));
+        setBackgrounds(backgroundsWithUrl);
+      })
+      .catch(console.error);
+
     fetchChromas().then(setChromaImages).catch(console.error);
-    fetchProcessedResults().then(setResults).catch(console.error);
+
+    fetchProcessedResults()
+      .then((fetchedResults) => {
+        const processedResults = fetchedResults.map((item) => ({
+          ...item,
+          thumbnail: (item as any).thumbnail ?? item.url,
+        }));
+        setResults(processedResults);
+      })
+      .catch(console.error);
   }, []);
 
   const handleProcess = async () => {
+    if (chromaImages.length === 0) {
+      alert("Please upload at least one chroma image");
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const chroma = chromaImages[0];
@@ -36,10 +80,18 @@ const App: React.FC = () => {
         throw new Error("A imagem de chroma não possui um nome de arquivo.");
       }
 
-      const processedImages = await processAndRefreshProcessedImages(
-        chroma.name
+      const processedImagesRaw: ProcessedImage[] =
+        await processAndRefreshProcessedImages(chroma.name);
+
+      const processedImages: ProcessedImage[] = processedImagesRaw.map(
+        (item) => ({
+          ...item,
+          thumbnail: item.thumbnail ?? item.url,
+        })
       );
+
       setResults(processedImages);
+      setCurrentView("results");
     } catch (error) {
       console.error("Erro ao processar imagem:", error);
       alert("Ocorreu um erro durante o processamento.");
@@ -59,43 +111,95 @@ const App: React.FC = () => {
   const refreshResults = async () => {
     try {
       const updatedResults = await fetchProcessedResults();
-      setResults(updatedResults);
+      const processedResults = updatedResults.map((item) => ({
+        ...item,
+        thumbnail: (item as any).thumbnail ?? item.url,
+      }));
+      setResults(processedResults);
     } catch (error) {
       console.error("Erro ao atualizar resultados:", error);
     }
   };
 
+  const handleResultsChange = (newResults: Result[]) => {
+    const processedImages: ProcessedImage[] = newResults.map((r) => ({
+      ...r,
+      originalChroma: null, 
+      background: "",
+      createdAt: new Date(),
+      thumbnail: (r as any).thumbnail ?? r.url,
+    }));
+    setResults(processedImages);
+  };
+
+  const handleSidebarItemClick = (itemId: SidebarItemId) => {
+    setActiveSidebarItem(itemId);
+
+    switch (itemId) {
+      case "refresh":
+        setCurrentView("main");
+        break;
+      case "resize":
+        setCurrentView("chroma");
+        break;
+      case "favorite":
+        setCurrentView("results");
+        break;
+      case "text":
+        handleOpenIndividualEditor();
+        break;
+      default:
+        setCurrentView("main");
+    }
+  };
+
+  const handleDownload = () => {
+    if (results.length > 0) {
+      const link = document.createElement("a");
+      link.href = results[0].url;
+      link.download = results[0].name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert("No processed images available for download");
+    }
+  };
+
+  const renderMainContent = () => {
+    switch (currentView) {
+      case "chroma":
+        return (
+          <div className="max-w-2xl mx-auto">
+            <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
+          </div>
+        );
+      case "results":
+        return (
+          <div className="max-w-6xl mx-auto">
+            <ResultPanel
+              results={results}
+              loading={isProcessing}
+              onChange={handleResultsChange}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <>
-      <div className={styles.appContainer}>
+    <div className="h-screen flex flex-col bg-gray-50">
+      <Header onDownload={handleDownload} />
+
+      <div className="flex-1 flex overflow-hidden">
         <Sidebar
-          items={backgrounds}
-          selected={selectedBackground ? [selectedBackground] : []}
-          onSelect={setSelectedBackground}
+          activeItem={activeSidebarItem}
+          onItemClick={handleSidebarItemClick}
         />
 
-        <ChromaKeyPanel images={chromaImages} onChange={setChromaImages} />
-
-        <div className={styles.resultsPanel}>
-          <ResultPanel
-            results={results}
-            loading={isProcessing}
-            onChange={setResults}
-          />
-        </div>
-      </div>
-
-      <div className={styles.actionBar}>
-        <button
-          className={styles.individualEditorButton}
-          onClick={handleOpenIndividualEditor}
-        >
-          Editor Individual
-        </button>
-
-        <ProcessButton onClick={handleProcess} className={styles.processButton}>
-          {isProcessing ? "Processando..." : "Gerar Resultado"}
-        </ProcessButton>
+        <MainContent>{renderMainContent()}</MainContent>
       </div>
 
       {isIndividualEditorOpen && (
@@ -106,7 +210,7 @@ const App: React.FC = () => {
           onImageExported={refreshResults}
         />
       )}
-    </>
+    </div>
   );
 };
 

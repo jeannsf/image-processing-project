@@ -1,47 +1,111 @@
 export interface Background {
   id: string;
   name: string;
-  url: string;
-  thumbnail?: string; 
-}
-
-export interface ChromaImage {
-  id: string;
-  file?: File;
-  previewUrl: string;
-  name?: string;
-  url?: string; 
-  thumbnail?: string; 
-  processedUrl?: string;
+  url?: string;
+  thumbnail?: string;
 }
 
 export interface ResultImage {
   id: string;
   name: string;
   url: string;
-  thumbnail?: string;
-  createdAt?: string;
+  originalChroma?: string;
+  background?: string;
+  createdAt: Date;
 }
 
-export interface ChromaStyles {
-  scale: number;
-  positionX: number;
-  positionY: number;
-  rotation: number;
-  opacity: number;
-  blendMode?: string; 
-  flipHorizontal: boolean;
-  flipVertical: boolean;
+export interface SidebarItem {
+  id: string;
+  icon: string;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
 }
 
-export interface ProcessRequest {
-  chromaImageName: string;
-  backgroundId?: string;
-  styles?: ChromaStyles;
-}
-
-export interface ProcessResponse {
-  success: boolean;
-  results: ResultImage[];
+export interface ProcessingStatus {
+  isProcessing: boolean;
+  progress?: number;
   message?: string;
+}
+
+export interface BackgroundImage {
+  id: string;
+  name: string;
+  url: string;
+  thumbnail: string;
+}
+
+export interface ChromaImage {
+  id: string;
+  name: string;
+  url: string;
+  file?: File;
+}
+
+export interface ProcessedImage {
+  id: string;
+  name: string;
+  url: string;
+  thumbnail?: string;
+  originalChroma: any;
+  background: string;
+  createdAt: Date;
+}
+
+export interface ChromaImage {
+  id: string;
+  name: string;
+  url: string;
+  file?: File;
+}
+
+export interface UploadedImage {
+  id: string;
+  name: string;
+  url: string;
+  file: File;
+}
+
+export interface Result {
+  id: string;
+  name: string;
+  url: string;
+}
+
+export interface ResultPanelProps {
+  results: Result[];
+  loading: boolean;
+  onChange: (results: Result[]) => void;
+}
+
+export interface IndividualEditorProps {
+  backgrounds: Background[];
+  chromaImages: ChromaImage[];
+  onClose: () => void;
+  onImageExported?: (image: ProcessedImage) => void;
+}
+
+export interface ChromaKeyPanelProps {
+  images: ChromaImage[];
+  onChange: (images: ChromaImage[]) => void;
+}
+
+export type SidebarItemId = 
+  | 'refresh' 
+  | 'resize' 
+  | 'favorite' 
+  | 'text' 
+  | 'add-text' 
+  | 'expand' 
+  | 'user';
+
+export interface SidebarItems {
+  id: SidebarItemId;
+  icon: React.ComponentType<{ size?: number }>;
+  label: string;
+}
+
+export interface SidebarProps {
+  activeItem: SidebarItemId;
+  onItemClick?: (id: SidebarItemId) => void;
 }
