@@ -91,17 +91,19 @@ export interface ChromaKeyPanelProps {
 }
 
 export type SidebarItemId = 
-  | 'refresh' 
-  | 'resize' 
-  | 'favorite' 
-  | 'text' 
-  | 'add-text' 
-  | 'expand' 
-  | 'user';
+  | 'design'
+  | 'elements'
+  | 'text'
+  | 'brand'
+  | 'uploads'
+  | 'tools'
+  | 'projects'
+  | 'apps'
+  | 'magic';
 
 export interface SidebarItems {
   id: SidebarItemId;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ElementType;
   label: string;
 }
 

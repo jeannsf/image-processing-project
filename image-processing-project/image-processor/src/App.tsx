@@ -36,7 +36,7 @@ const App: React.FC = () => {
     useState<boolean>(false);
 
   const [activeSidebarItem, setActiveSidebarItem] =
-    useState<SidebarItemId>("refresh");
+    useState<SidebarItemId>("design");
   const [currentView, setCurrentView] = useState<string>("main");
 
   useEffect(() => {
@@ -124,7 +124,7 @@ const App: React.FC = () => {
   const handleResultsChange = (newResults: Result[]) => {
     const processedImages: ProcessedImage[] = newResults.map((r) => ({
       ...r,
-      originalChroma: null, 
+      originalChroma: null,
       background: "",
       createdAt: new Date(),
       thumbnail: (r as any).thumbnail ?? r.url,
@@ -136,13 +136,13 @@ const App: React.FC = () => {
     setActiveSidebarItem(itemId);
 
     switch (itemId) {
-      case "refresh":
+      case "design":
         setCurrentView("main");
         break;
-      case "resize":
+      case "elements":
         setCurrentView("chroma");
         break;
-      case "favorite":
+      case "magic":
         setCurrentView("results");
         break;
       case "text":

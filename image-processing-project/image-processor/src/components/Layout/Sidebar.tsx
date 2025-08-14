@@ -1,56 +1,91 @@
-import React from 'react';
-import { 
-  RotateCcw, 
-  Maximize2, 
-  Star, 
-  Type, 
-  Plus, 
-  ArrowUpRight, 
-  User 
-} from 'lucide-react';
-import { SidebarItems, SidebarProps } from '../../types';
-
-
+import React, { useState } from "react";
+import {
+  Palette,
+  Shapes,
+  Type,
+  Star,
+  Upload,
+  Wrench,
+  FolderOpen,
+  Grid3X3,
+  Wand2,
+} from "lucide-react";
+import { SidebarItemId, SidebarItems, SidebarProps } from "../../types";
+import DesignPanel from "../DesignPanel/DesignPanel";
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
+  const [isDesignPanelOpen, setIsDesignPanelOpen] = useState(false);
+
   const sidebarItems: SidebarItems[] = [
-    { id: 'refresh', icon: RotateCcw, label: 'Refresh' },
-    { id: 'resize', icon: Maximize2, label: 'Resize' },
-    { id: 'favorite', icon: Star, label: 'Favorite' },
-    { id: 'text', icon: Type, label: 'Text' },
-    { id: 'add-text', icon: Plus, label: 'Add Text' },
-    { id: 'expand', icon: ArrowUpRight, label: 'Expand' },
-    { id: 'user', icon: User, label: 'User' },
+    { id: "design", icon: Palette, label: "Design" },
+    { id: "elements", icon: Shapes, label: "Elementos" },
+    { id: "text", icon: Type, label: "Texto" },
+    { id: "brand", icon: Star, label: "Marca" },
+    { id: "uploads", icon: Upload, label: "Uploads" },
+    { id: "tools", icon: Wrench, label: "Ferramentas" },
+    { id: "projects", icon: FolderOpen, label: "Projetos" },
+    { id: "apps", icon: Grid3X3, label: "Apps" },
+    { id: "magic", icon: Wand2, label: "Mídia Mágica" },
   ];
 
+  const handleItemClick = (itemId: SidebarItemId) => {
+    onItemClick?.(itemId);
+
+    if (itemId === "design") {
+      setIsDesignPanelOpen(true);
+    }
+  };
+
+  const handleDesignPanelClose = () => {
+    setIsDesignPanelOpen(false);
+  };
+
   return (
-    <div className="w-16 bg-slate-800 flex flex-col items-center py-4 space-y-4">
-      {sidebarItems.map((item) => {
-        const IconComponent = item.icon;
-        const isActive = activeItem === item.id;
-        
-        return (
-          <button
-            key={item.id}
-            onClick={() => onItemClick?.(item.id)}
-            className={`
-              p-3 rounded-lg transition-colors duration-200 group relative
-              ${isActive 
-                ? 'bg-slate-700 text-white' 
-                : 'text-slate-400 hover:text-white hover:bg-slate-700'
-              }
-            `}
-            title={item.label}
-          >
-            <IconComponent size={20} />
-            
-            <div className="absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-              {item.label}
-            </div>
-          </button>
-        );
-      })}
-    </div>
+    <>
+      <div className="w-20 bg-white border-r border-gray-100 flex flex-col py-2">
+        {sidebarItems.map((item) => {
+          const IconComponent = item.icon;
+          const isActive = activeItem === item.id;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleItemClick(item.id)}
+              className={`
+                w-full h-16 flex flex-col items-center justify-center px-2 py-2 transition-all duration-150 group
+                ${
+                  isActive
+                    ? "bg-blue-50 border-r-2 border-blue-500"
+                    : "hover:bg-gray-50"
+                }
+              `}
+              title={item.label}
+            >
+              <IconComponent
+                size={18}
+                className={`mb-1 ${
+                  isActive ? "text-blue-600" : "text-gray-700"
+                }`}
+              />
+
+              <span
+                className={`
+                text-xs font-normal leading-tight text-center max-w-full
+                ${isActive ? "text-blue-600 font-medium" : "text-gray-700"}
+              `}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <DesignPanel
+        isOpen={isDesignPanelOpen}
+        onClose={handleDesignPanelClose}
+      />
+    </>
   );
 };
 
