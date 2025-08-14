@@ -1,69 +1,126 @@
-import React from 'react';
-import { Type, AlignLeft } from 'lucide-react';
-import { SectionProps, TextElement } from '../../../types/designPanel';
+import React, { useRef, useState } from 'react';
+import { Upload, Link } from 'lucide-react';
+import { SectionProps, ImageElement } from '../../../types/designPanel';
 
-const ElementsSection: React.FC<SectionProps> = ({ onElementAdd }) => {
-  const handleAddHeadline = () => {
-    const headlineElement: TextElement = {
-      id: `headline-${Date.now()}`,
-      type: 'headline',
-      content: 'Headline',
-      x: 100,
-      y: 100,
-      fontSize: 32,
-      fontFamily: 'Inter',
-      color: '#000000',
-      bold: true,
-      italic: false,
-      underline: false,
-      alignment: 'left',
-    };
-    onElementAdd(headlineElement);
+const ImagesSection: React.FC<SectionProps> = ({ onElementAdd }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [urlInput, setUrlInput] = useState('');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageElement: ImageElement = {
+          id: `image-${Date.now()}`,
+          type: 'image',
+          src: e.target?.result as string,
+          x: 150,
+          y: 150,
+          width: 200,
+          height: 150,
+          rotation: 0,
+          zIndex: 1,
+          locked: false,
+          visible: true,
+        };
+        onElementAdd(imageElement);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleAddBodyText = () => {
-    const bodyTextElement: TextElement = {
-      id: `body-${Date.now()}`,
-      type: 'body',
-      content: 'Body Text',
-      x: 100,
-      y: 200,
-      fontSize: 16,
-      fontFamily: 'Inter',
-      color: '#000000',
-      bold: false,
-      italic: false,
-      underline: false,
-      alignment: 'left',
-    };
-    onElementAdd(bodyTextElement);
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUrlSubmit = () => {
+    if (urlInput.trim()) {
+      const imageElement: ImageElement = {
+        id: `image-${Date.now()}`,
+        type: 'image',
+        src: urlInput.trim(),
+        x: 150,
+        y: 150,
+        width: 200,
+        height: 150,
+        rotation: 0,
+        zIndex: 1,
+        locked: false,
+        visible: true,
+      };
+      onElementAdd(imageElement);
+      setUrlInput('');
+      setShowUrlInput(false);
+    }
+  };
+
+  const handleFromUrlClick = () => {
+    setShowUrlInput(!showUrlInput);
   };
 
   return (
     <div className="mb-6">
-      <div className="space-y-3">
+      <h3 className="text-white font-medium mb-3">Images</h3>
+      
+      <div className="space-y-2">
         <button
-          onClick={handleAddHeadline}
-          className="w-full text-left p-3 hover:bg-gray-700 rounded transition-colors flex items-center space-x-3"
+          onClick={handleUploadClick}
+          className="w-full bg-white text-gray-800 py-2 px-4 rounded text-sm font-medium hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
         >
-          <Type size={18} className="text-gray-400" />
-          <div>
-            <div className="text-white font-semibold text-lg">Headline</div>
-          </div>
+          <Upload size={16} />
+          <span>Upload</span>
         </button>
 
         <button
-          onClick={handleAddBodyText}
-          className="w-full text-left p-3 hover:bg-gray-700 rounded transition-colors flex items-center space-x-3"
+          onClick={handleFromUrlClick}
+          className="w-full bg-transparent border border-gray-500 text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
         >
-          <AlignLeft size={18} className="text-gray-400" />
-          <div>
-            <div className="text-white text-sm">Body Text</div>
-          </div>
+          <Link size={16} />
+          <span>From URL</span>
         </button>
+
+        {showUrlInput && (
+          <div className="mt-2 space-y-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Enter image URL..."
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={handleUrlSubmit}
+                disabled={!urlInput.trim()}
+                className="flex-1 bg-blue-600 text-white py-1 px-3 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setShowUrlInput(false);
+                  setUrlInput('');
+                }}
+                className="flex-1 bg-gray-600 text-white py-1 px-3 rounded text-sm hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
     </div>
   );
 };
 
-export default ElementsSection;
+export default ImagesSection;

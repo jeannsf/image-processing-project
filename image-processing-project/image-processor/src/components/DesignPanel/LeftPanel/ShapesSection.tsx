@@ -11,7 +11,11 @@ const ShapesSection: React.FC<SectionProps> = ({ onElementAdd }) => {
       y: 200,
       width: 100,
       height: 100,
+      rotation: 0,
       color: '#3B82F6',
+      zIndex: 1,
+      locked: false,
+      visible: true,
     };
     onElementAdd(shapeElement);
   };

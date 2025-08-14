@@ -10,6 +10,9 @@ const ElementsSection: React.FC<SectionProps> = ({ onElementAdd }) => {
       content: 'Headline',
       x: 100,
       y: 100,
+      width: 200,
+      height: 50,
+      rotation: 0,
       fontSize: 32,
       fontFamily: 'Inter',
       color: '#000000',
@@ -17,6 +20,9 @@ const ElementsSection: React.FC<SectionProps> = ({ onElementAdd }) => {
       italic: false,
       underline: false,
       alignment: 'left',
+      zIndex: 1,
+      locked: false,
+      visible: true,
     };
     onElementAdd(headlineElement);
   };
@@ -28,6 +34,9 @@ const ElementsSection: React.FC<SectionProps> = ({ onElementAdd }) => {
       content: 'Body Text',
       x: 100,
       y: 200,
+      width: 300,
+      height: 100,
+      rotation: 0,
       fontSize: 16,
       fontFamily: 'Inter',
       color: '#000000',
@@ -35,6 +44,9 @@ const ElementsSection: React.FC<SectionProps> = ({ onElementAdd }) => {
       italic: false,
       underline: false,
       alignment: 'left',
+      zIndex: 1,
+      locked: false,
+      visible: true,
     };
     onElementAdd(bodyTextElement);
   };
